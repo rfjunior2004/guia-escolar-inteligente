@@ -1,0 +1,34 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f1f5f9;
+  text-align: center;
+  padding: 30px;
+}
+
+h1 {
+  color: #1e40af;
+}
+
+button {
+  background: #1e40af;
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  font-size: 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 10px;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+#saida {
+  margin-top: 20px;
+  font-size: 18px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
