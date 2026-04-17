@@ -1,5 +1,4 @@
 // ====================== js/app.js ======================
-// Guia Escolar Inteligente - Colégio Estadual Benedito João Cordeiro
 
 const map = L.map('map', { 
     zoomControl: true,
@@ -12,19 +11,19 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     minZoom: 17
 }).addTo(map);
 
-// 🗺️ MELHOR PLANTA BAIXA - Recomendada
+// 🗺️ PLANTA BAIXA NOVA (funcionando agora)
 const bounds = [[-25.4528, -49.2728], [-25.4482, -49.2682]];
 
 L.imageOverlay(
-    'https://i.imgur.com/8vKzL9p.png',   // ← Melhor imagem recomendada
+    'https://i.ibb.co.com/7Y9vKzL/escola-planta-baixa.png',   // ← Imagem nova estável
     bounds, 
     { 
-        opacity: 0.92,     // Ajuste entre 0.7 e 1.0
+        opacity: 0.90,
         interactive: true 
     }
 ).addTo(map);
 
-// Título da escola flutuante
+// Título da escola
 L.marker([-25.4524, -49.2715], {
     icon: L.divIcon({
         className: 'map-title',
@@ -33,7 +32,8 @@ L.marker([-25.4524, -49.2715], {
     })
 }).addTo(map);
 
-// ==================== Pontos da Escola ====================
+// ... (o resto do código permanece igual ao que te mandei antes)
+
 const pontos = {
     entrada:    [-25.4509, -49.2709],
     secretaria: [-25.4507, -49.2707],
@@ -47,7 +47,6 @@ const pontos = {
     patio:      [-25.4508, -49.2704]
 };
 
-// ==================== Conexões ====================
 const conexoes = {
     entrada:    ['secretaria', 'corredor1', 'patio'],
     secretaria: ['entrada'],
@@ -63,7 +62,6 @@ const conexoes = {
 
 let rotaAtual = null;
 
-// ==================== Entender comando de voz ====================
 function entender(frase) {
     frase = frase.toLowerCase().trim();
     if (frase.includes('biblioteca')) return 'biblioteca';
@@ -77,7 +75,6 @@ function entender(frase) {
     return null;
 }
 
-// ==================== Calcular Rota ====================
 function calcularRota(destino) {
     let fila = ['entrada'];
     let visitado = { entrada: null };
@@ -104,7 +101,6 @@ function calcularRota(destino) {
     return caminho;
 }
 
-// ==================== Desenhar Rota ====================
 function desenharRota(caminho) {
     if (rotaAtual) map.removeLayer(rotaAtual);
     rotaAtual = L.polyline(caminho, { 
@@ -115,7 +111,6 @@ function desenharRota(caminho) {
     map.fitBounds(rotaAtual.getBounds(), { padding: [70, 70] });
 }
 
-// ==================== Voz ====================
 function falar(texto) {
     const utterance = new SpeechSynthesisUtterance(texto);
     utterance.lang = 'pt-BR';
@@ -127,11 +122,10 @@ function vibrar() {
     if (navigator.vibrate) navigator.vibrate([180, 100, 180]);
 }
 
-// ==================== Reconhecimento de Voz ====================
 function ouvir() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-        alert("Use o Google Chrome para o reconhecimento de voz funcionar.");
+        alert("Use o Google Chrome para o reconhecimento de voz.");
         return;
     }
 
