@@ -3,153 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guia Escolar IA PRO+</title>
+<title>Guia Escolar IA - Benedito</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-<style>
-body { margin:0; font-family:'Segoe UI'; background:#020617; color:white; }
-header { background:#1e40af; padding:15px; text-align:center; font-size:22px; }
-.container { display:grid; grid-template-columns:350px 1fr; height:calc(100vh - 60px); }
-.painel { padding:20px; background:#020617; border-right:1px solid #1f2937; }
-button { width:100%; padding:15px; margin-top:10px; border:none; border-radius:10px; background:#2563eb; color:white; font-size:16px; }
-#saida { margin-top:20px; background:#020617; padding:15px; border-radius:10px; }
-#map { height:100%; }
-</style>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<header>🧠 Guia Escolar IA PRO+</header>
+<header>🏫 Colégio Estadual Benedito João Cordeiro</header>
 
 <div class="container">
+  <div class="painel">
+    <h2>Assistente Inteligente</h2>
+    <button onclick="ouvir()">🎤 Falar</button>
+    <div id="saida">Pronto para ajudar...</div>
+  </div>
 
-<div class="painel">
-<h3>Assistente Inteligente</h3>
-<button onclick="ouvir()">🎤 Falar</button>
-<div id="saida">Pronto...</div>
+  <div id="map"></div>
 </div>
 
-<div id="map"></div>
-
-</div>
-
-<script>
-const map = L.map('map').setView([-25.45,-49.27],19);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-// Planta simulada (pontos conectados = corredores)
-const grafo = {
-  entrada: [-25.4500,-49.2700],
-  corredor1: [-25.4502,-49.2702],
-  corredor2: [-25.4504,-49.2704],
-  biblioteca: [-25.4506,-49.2706],
-  secretaria: [-25.4498,-49.2698],
-  banheiro: [-25.4503,-49.2701]
-};
-
-const conexoes = {
-  entrada: ['corredor1'],
-  corredor1: ['entrada','corredor2','banheiro'],
-  corredor2: ['corredor1','biblioteca'],
-  biblioteca: ['corredor2'],
-  secretaria: ['entrada'],
-  banheiro: ['corredor1']
-};
-
-let userMarker, rota;
-
-// GPS
-navigator.geolocation.watchPosition(pos=>{
-  const p=[pos.coords.latitude,pos.coords.longitude];
-  if(userMarker) map.removeLayer(userMarker);
-  userMarker=L.marker(p).addTo(map).bindPopup("Você está aqui");
-});
-
-// IA simples NLP
-function entender(frase){
-  frase=frase.toLowerCase();
-  if(frase.includes('biblioteca')) return 'biblioteca';
-  if(frase.includes('secretaria')) return 'secretaria';
-  if(frase.includes('banheiro')) return 'banheiro';
-  return null;
-}
-
-// Busca caminho (BFS)
-function rotaInteligente(destino){
-  let fila=['entrada'];
-  let visitado={entrada:null};
-
-  while(fila.length){
-    let atual=fila.shift();
-    if(atual===destino) break;
-    conexoes[atual].forEach(v=>{
-      if(!visitado[v]){
-        visitado[v]=atual;
-        fila.push(v);
-      }
-    });
-  }
-
-  let caminho=[];
-  let passo=destino;
-  while(passo){
-    caminho.unshift(grafo[passo]);
-    passo=visitado[passo];
-  }
-
-  return caminho;
-}
-
-function desenhar(caminho){
-  if(rota) map.removeLayer(rota);
-  rota=L.polyline(caminho).addTo(map);
-  map.fitBounds(rota.getBounds());
-
-  falarPassoAPasso(caminho);
-}
-
-// Áudio + instruções
-function falar(texto){
-  const u=new SpeechSynthesisUtterance(texto);
-  u.lang='pt-BR';
-  speechSynthesis.speak(u);
-}
-
-function vibrar(){
-  if(navigator.vibrate) navigator.vibrate([200,100,200]);
-}
-
-function falarPassoAPasso(caminho){
-  for(let i=0;i<caminho.length;i++){
-    setTimeout(()=>{
-      falar('Siga para o próximo ponto');
-      vibrar();
-    }, i*3000);
-  }
-}
-
-function ouvir(){
-  const rec=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
-  rec.lang='pt-BR';
-  rec.start();
-
-  rec.onresult=e=>{
-    const frase=e.results[0][0].transcript;
-    document.getElementById('saida').innerText=frase;
-
-    const destino=entender(frase);
-
-    if(destino){
-      falar('Claro, vou te levar até ' + destino);
-      const caminho=rotaInteligente(destino);
-      desenhar(caminho);
-    }else{
-      falar('Desculpe, não entendi. Pode repetir?');
-    }
-  }
-}
-</script>
-
+<script src="js/app.js"></script>
 </body>
 </html>
