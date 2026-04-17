@@ -1,162 +1,154 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Guia Escolar Inteligente</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia Escolar IA PRO+</title>
 
-  <!-- Leaflet (Mapa) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f172a;
-      color: white;
-    }
-
-    header {
-      background: #1e40af;
-      padding: 15px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    .container {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      height: calc(100vh - 60px);
-    }
-
-    .painel {
-      padding: 20px;
-      background: #111827;
-      border-right: 1px solid #1f2937;
-    }
-
-    button {
-      width: 100%;
-      padding: 15px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 10px;
-      background: #1e40af;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #2563eb;
-    }
-
-    #saida {
-      margin-top: 20px;
-      background: #020617;
-      padding: 15px;
-      border-radius: 10px;
-      min-height: 100px;
-    }
-
-    #map {
-      height: 100%;
-    }
-  </style>
+<style>
+body { margin:0; font-family:'Segoe UI'; background:#020617; color:white; }
+header { background:#1e40af; padding:15px; text-align:center; font-size:22px; }
+.container { display:grid; grid-template-columns:350px 1fr; height:calc(100vh - 60px); }
+.painel { padding:20px; background:#020617; border-right:1px solid #1f2937; }
+button { width:100%; padding:15px; margin-top:10px; border:none; border-radius:10px; background:#2563eb; color:white; font-size:16px; }
+#saida { margin-top:20px; background:#020617; padding:15px; border-radius:10px; }
+#map { height:100%; }
+</style>
 </head>
 <body>
 
-<header>🎓 Guia Escolar Inteligente</header>
+<header>🧠 Guia Escolar IA PRO+</header>
 
 <div class="container">
 
-  <div class="painel">
-    <h3>Assistente por Voz</h3>
-    <p>Fale: biblioteca, secretaria, banheiro</p>
+<div class="painel">
+<h3>Assistente Inteligente</h3>
+<button onclick="ouvir()">🎤 Falar</button>
+<div id="saida">Pronto...</div>
+</div>
 
-    <button onclick="iniciarReconhecimento()">🎤 Falar</button>
-
-    <div id="saida">Aguardando comando...</div>
-  </div>
-
-  <div id="map"></div>
+<div id="map"></div>
 
 </div>
 
 <script>
-  // Inicializar mapa
-  const map = L.map('map').setView([ -25.45, -49.27 ], 18);
+const map = L.map('map').setView([-25.45,-49.27],19);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
+// Planta simulada (pontos conectados = corredores)
+const grafo = {
+  entrada: [-25.4500,-49.2700],
+  corredor1: [-25.4502,-49.2702],
+  corredor2: [-25.4504,-49.2704],
+  biblioteca: [-25.4506,-49.2706],
+  secretaria: [-25.4498,-49.2698],
+  banheiro: [-25.4503,-49.2701]
+};
 
-  const locais = {
-    biblioteca: [-25.4505, -49.2705],
-    secretaria: [-25.4498, -49.2698],
-    banheiro: [-25.4502, -49.2702]
-  };
+const conexoes = {
+  entrada: ['corredor1'],
+  corredor1: ['entrada','corredor2','banheiro'],
+  corredor2: ['corredor1','biblioteca'],
+  biblioteca: ['corredor2'],
+  secretaria: ['entrada'],
+  banheiro: ['corredor1']
+};
 
-  let marcador;
+let userMarker, rota;
 
-  function irPara(local) {
-    const coords = locais[local];
+// GPS
+navigator.geolocation.watchPosition(pos=>{
+  const p=[pos.coords.latitude,pos.coords.longitude];
+  if(userMarker) map.removeLayer(userMarker);
+  userMarker=L.marker(p).addTo(map).bindPopup("Você está aqui");
+});
 
-    if (!coords) return;
+// IA simples NLP
+function entender(frase){
+  frase=frase.toLowerCase();
+  if(frase.includes('biblioteca')) return 'biblioteca';
+  if(frase.includes('secretaria')) return 'secretaria';
+  if(frase.includes('banheiro')) return 'banheiro';
+  return null;
+}
 
-    if (marcador) map.removeLayer(marcador);
+// Busca caminho (BFS)
+function rotaInteligente(destino){
+  let fila=['entrada'];
+  let visitado={entrada:null};
 
-    marcador = L.marker(coords).addTo(map)
-      .bindPopup(local.toUpperCase())
-      .openPopup();
-
-    map.setView(coords, 19);
+  while(fila.length){
+    let atual=fila.shift();
+    if(atual===destino) break;
+    conexoes[atual].forEach(v=>{
+      if(!visitado[v]){
+        visitado[v]=atual;
+        fila.push(v);
+      }
+    });
   }
 
-  function falar(texto) {
-    const fala = new SpeechSynthesisUtterance(texto);
-    fala.lang = 'pt-BR';
-    speechSynthesis.speak(fala);
+  let caminho=[];
+  let passo=destino;
+  while(passo){
+    caminho.unshift(grafo[passo]);
+    passo=visitado[passo];
   }
 
-  function iniciarReconhecimento() {
-    const reconhecimento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    reconhecimento.lang = 'pt-BR';
+  return caminho;
+}
 
-    reconhecimento.start();
+function desenhar(caminho){
+  if(rota) map.removeLayer(rota);
+  rota=L.polyline(caminho).addTo(map);
+  map.fitBounds(rota.getBounds());
 
-    reconhecimento.onresult = function(event) {
-      const comando = event.results[0][0].transcript.toLowerCase();
-      document.getElementById('saida').innerText = "Você disse: " + comando;
+  falarPassoAPasso(caminho);
+}
 
-      processarComando(comando);
-    };
+// Áudio + instruções
+function falar(texto){
+  const u=new SpeechSynthesisUtterance(texto);
+  u.lang='pt-BR';
+  speechSynthesis.speak(u);
+}
+
+function vibrar(){
+  if(navigator.vibrate) navigator.vibrate([200,100,200]);
+}
+
+function falarPassoAPasso(caminho){
+  for(let i=0;i<caminho.length;i++){
+    setTimeout(()=>{
+      falar('Siga para o próximo ponto');
+      vibrar();
+    }, i*3000);
   }
+}
 
-  function processarComando(comando) {
-    let resposta = "Não entendi.";
+function ouvir(){
+  const rec=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+  rec.lang='pt-BR';
+  rec.start();
 
-    if (comando.includes("biblioteca")) {
-      resposta = "Indo para a biblioteca";
-      irPara("biblioteca");
-    }
-    else if (comando.includes("secretaria")) {
-      resposta = "Indo para a secretaria";
-      irPara("secretaria");
-    }
-    else if (comando.includes("banheiro")) {
-      resposta = "Indo para o banheiro acessível";
-      irPara("banheiro");
-    }
-    else if (comando.includes("onde estou")) {
-      resposta = "Você está no mapa da escola";
-    }
+  rec.onresult=e=>{
+    const frase=e.results[0][0].transcript;
+    document.getElementById('saida').innerText=frase;
 
-    document.getElementById('saida').innerText += "\n" + resposta;
-    falar(resposta);
+    const destino=entender(frase);
+
+    if(destino){
+      falar('Claro, vou te levar até ' + destino);
+      const caminho=rotaInteligente(destino);
+      desenhar(caminho);
+    }else{
+      falar('Desculpe, não entendi. Pode repetir?');
+    }
   }
+}
 </script>
 
 </body>
