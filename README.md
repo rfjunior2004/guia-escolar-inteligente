@@ -1,25 +1,14 @@
-# 🎓 Guia Escolar Inteligente
+# Guia Escolar IA PRO+
 
-Projeto de acessibilidade com uso de IA (voz) para auxiliar na mobilidade dentro da escola.
+Projeto avançado de acessibilidade com IA, GPS e rotas inteligentes.
 
-## 🚀 Funcionalidades
+## Funcionalidades
 - Reconhecimento de voz
-- Resposta por áudio
-- Simulação de rotas acessíveis
+- IA básica (interpretação de frases)
+- GPS em tempo real
+- Rotas inteligentes (tipo Waze)
+- Vibração para acessibilidade
+- Mapa interativo (Leaflet)
 
-## 🛠️ Tecnologias
-- HTML
-- CSS
-- JavaScript
-- Web Speech API
-
-## ▶️ Como usar
-1. Abra o arquivo index.html no navegador (Google Chrome)
-2. Clique em "Falar"
-3. Diga um destino: biblioteca, secretaria ou banheiro
-
-## 🌐 Publicação
-Pode ser publicado no GitHub Pages facilmente.
-
----
-Projeto educacional para curso de Desenvolvimento de Sistemas.
+## Como usar
+Abra index.html no navegador (Chrome) e permita localização.
