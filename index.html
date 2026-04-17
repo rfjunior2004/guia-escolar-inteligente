@@ -1,29 +1,54 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guia Escolar IA - Benedito</title>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Escolar IA - Benedito João Cordeiro</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    
+    <!-- CSS do projeto -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <header>
+        <h1>🏫 Guia Escolar Inteligente</h1>
+        <p>Colégio Estadual Benedito João Cordeiro</p>
+    </header>
 
-<header>🏫 Colégio Estadual Benedito João Cordeiro</header>
+    <div class="container">
+        <!-- Painel lateral -->
+        <div class="painel">
+            <h2>🎤 Assistente por Voz</h2>
+            <button onclick="ouvir()" class="btn-falar">
+                🎤 Falar Comando
+            </button>
+            
+            <div id="saida" class="saida">
+                Clique em "Falar Comando" e diga:<br>
+                <strong>biblioteca, laboratório, secretaria, banheiro, sala 1...</strong>
+            </div>
 
-<div class="container">
-  <div class="painel">
-    <h2>Assistente Inteligente</h2>
-    <button onclick="ouvir()">🎤 Falar</button>
-    <div id="saida">Pronto para ajudar...</div>
-  </div>
+            <div class="info">
+                <h3>Comandos suportados:</h3>
+                <ul>
+                    <li>Biblioteca</li>
+                    <li>Laboratório</li>
+                    <li>Secretaria</li>
+                    <li>Banheiro</li>
+                    <li>Sala 1 / Sala 2</li>
+                    <li>Pátio / Entrada</li>
+                </ul>
+            </div>
+        </div>
 
-  <div id="map"></div>
-</div>
+        <!-- Mapa -->
+        <div id="map"></div>
+    </div>
 
-<script src="js/app.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
