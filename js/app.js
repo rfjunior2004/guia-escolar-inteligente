@@ -1,36 +1,35 @@
 // ====================== js/app.js ======================
 // Guia Escolar Inteligente - Colégio Estadual Benedito João Cordeiro
 
-// ==================== Inicialização do Mapa ====================
 const map = L.map('map', { 
     zoomControl: true,
     attributionControl: false 
 }).setView([-25.4505, -49.2702], 19);
 
-// Mapa base (OpenStreetMap)
+// Mapa base
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 22,
     minZoom: 17
 }).addTo(map);
 
-// 🗺️ PLANTA BAIXA DA ESCOLA (Overlay)
-const bounds = [[-25.4525, -49.2725], [-25.4485, -49.2685]];
+// 🗺️ MELHOR PLANTA BAIXA - Recomendada
+const bounds = [[-25.4528, -49.2728], [-25.4482, -49.2682]];
 
 L.imageOverlay(
-    'https://i.imgur.com/8vKzL9p.png', 
+    'https://i.imgur.com/8vKzL9p.png',   // ← Melhor imagem recomendada
     bounds, 
     { 
-        opacity: 0.90,
+        opacity: 0.92,     // Ajuste entre 0.7 e 1.0
         interactive: true 
     }
 ).addTo(map);
 
-// Título da escola no mapa
-L.marker([-25.4522, -49.2718], {
+// Título da escola flutuante
+L.marker([-25.4524, -49.2715], {
     icon: L.divIcon({
         className: 'map-title',
-        html: `<div style="background:rgba(30,64,175,0.85); color:white; padding:6px 14px; border-radius:8px; font-size:15px; font-weight:bold; white-space:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.5);">🏫 Colégio Estadual Benedito João Cordeiro</div>`,
-        iconSize: [320, 40]
+        html: `<div style="background:rgba(30,64,175,0.9); color:white; padding:8px 16px; border-radius:8px; font-size:15px; font-weight:bold; box-shadow:0 4px 12px rgba(0,0,0,0.6);">🏫 Colégio Estadual Benedito João Cordeiro</div>`,
+        iconSize: [340, 45]
     })
 }).addTo(map);
 
@@ -48,7 +47,7 @@ const pontos = {
     patio:      [-25.4508, -49.2704]
 };
 
-// ==================== Conexões (Grafo da Escola) ====================
+// ==================== Conexões ====================
 const conexoes = {
     entrada:    ['secretaria', 'corredor1', 'patio'],
     secretaria: ['entrada'],
@@ -64,10 +63,9 @@ const conexoes = {
 
 let rotaAtual = null;
 
-// ==================== Função IA - Entender Comando ====================
+// ==================== Entender comando de voz ====================
 function entender(frase) {
     frase = frase.toLowerCase().trim();
-    
     if (frase.includes('biblioteca')) return 'biblioteca';
     if (frase.includes('laboratório') || frase.includes('laboratorio')) return 'laboratorio';
     if (frase.includes('secretaria')) return 'secretaria';
@@ -76,33 +74,26 @@ function entender(frase) {
     if (frase.includes('sala 1') || frase.includes('sala1')) return 'sala1';
     if (frase.includes('sala 2') || frase.includes('sala2')) return 'sala2';
     if (frase.includes('entrada')) return 'entrada';
-    
     return null;
 }
 
-// ==================== Calcular Rota (BFS) ====================
+// ==================== Calcular Rota ====================
 function calcularRota(destino) {
     let fila = ['entrada'];
     let visitado = { entrada: null };
-    let encontrado = false;
 
     while (fila.length > 0) {
         let atual = fila.shift();
-        if (atual === destino) {
-            encontrado = true;
-            break;
-        }
+        if (atual === destino) break;
         if (conexoes[atual]) {
             conexoes[atual].forEach(vizinho => {
-                if (!visitado.hasOwnProperty(vizinho)) {
+                if (!visitado[vizinho]) {
                     visitado[vizinho] = atual;
                     fila.push(vizinho);
                 }
             });
         }
     }
-
-    if (!encontrado) return [];
 
     let caminho = [];
     let passo = destino;
@@ -116,93 +107,57 @@ function calcularRota(destino) {
 // ==================== Desenhar Rota ====================
 function desenharRota(caminho) {
     if (rotaAtual) map.removeLayer(rotaAtual);
-    
     rotaAtual = L.polyline(caminho, { 
         color: '#22c55e', 
-        weight: 7, 
-        opacity: 0.95,
-        lineJoin: 'round'
+        weight: 8, 
+        opacity: 0.95 
     }).addTo(map);
-    
-    map.fitBounds(rotaAtual.getBounds(), { padding: [60, 60] });
+    map.fitBounds(rotaAtual.getBounds(), { padding: [70, 70] });
 }
 
-// ==================== Voz e Vibração ====================
+// ==================== Voz ====================
 function falar(texto) {
-    if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(texto);
-        utterance.lang = 'pt-BR';
-        utterance.rate = 1.05;
-        utterance.pitch = 1.0;
-        speechSynthesis.speak(utterance);
-    }
+    const utterance = new SpeechSynthesisUtterance(texto);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 1.08;
+    speechSynthesis.speak(utterance);
 }
 
 function vibrar() {
-    if (navigator.vibrate) {
-        navigator.vibrate([150, 80, 150]);
-    }
+    if (navigator.vibrate) navigator.vibrate([180, 100, 180]);
 }
 
-// ==================== Reconhecimento de Voz (Corrigido) ====================
+// ==================== Reconhecimento de Voz ====================
 function ouvir() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
     if (!SpeechRecognition) {
-        alert("❌ Seu navegador não suporta reconhecimento de voz.\n\nUse Google Chrome!");
+        alert("Use o Google Chrome para o reconhecimento de voz funcionar.");
         return;
     }
 
     const recognition = new SpeechRecognition();
     recognition.lang = 'pt-BR';
     recognition.interimResults = false;
-    recognition.continuous = false;
 
-    document.getElementById('saida').innerHTML = 
-        `<span style="color:#22c55e; font-weight:bold;">🎤 Ouvindo... fale agora</span>`;
+    document.getElementById('saida').innerHTML = `<span style="color:#22c55e">🎤 Ouvindo... fale agora</span>`;
 
     recognition.start();
 
     recognition.onresult = function(event) {
         const frase = event.results[0][0].transcript.trim();
-        document.getElementById('saida').innerHTML = 
-            `<strong>Você disse:</strong><br>${frase}`;
+        document.getElementById('saida').innerHTML = `<strong>Você disse:</strong> ${frase}`;
 
         const destino = entender(frase);
-
         if (destino) {
             falar(`Ok, te levando até ${destino.replace('sala', 'sala ')}`);
             const caminho = calcularRota(destino);
-            
-            if (caminho.length > 0) {
-                desenharRota(caminho);
-                
-                // Instruções passo a passo com voz
-                caminho.forEach((_, i) => {
-                    setTimeout(() => {
-                        falar("Siga para o próximo ponto");
-                        vibrar();
-                    }, i * 3000);
-                });
-            }
+            if (caminho.length > 1) desenharRota(caminho);
         } else {
-            falar("Não entendi. Tente: biblioteca, laboratório, secretaria, banheiro ou sala 1");
+            falar("Não entendi. Tente: biblioteca, laboratório, secretaria, banheiro");
         }
     };
 
-    recognition.onerror = function(event) {
-        console.error(event.error);
-        let mensagem = "Erro no reconhecimento";
-
-        if (event.error === "not-allowed") mensagem = "❌ Permissão de microfone negada";
-        if (event.error === "no-speech") mensagem = "⚠️ Nenhuma fala detectada. Tente novamente";
-        if (event.error === "audio-capture") mensagem = "❌ Microfone não encontrado";
-
-        document.getElementById('saida').innerHTML = 
-            `<span style="color:#ef4444;">${mensagem}</span>`;
-    };
-
-    recognition.onend = function() {
-        console.log("Reconhecimento finalizado");
+    recognition.onerror = function() {
+        document.getElementById('saida').innerHTML = `<span style="color:#ef4444">❌ Erro. Verifique o microfone.</span>`;
     };
 }
