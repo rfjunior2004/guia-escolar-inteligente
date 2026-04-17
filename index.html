@@ -2,18 +2,162 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Guia Escolar Inteligente</title>
-  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Leaflet (Mapa) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: white;
+    }
+
+    header {
+      background: #1e40af;
+      padding: 15px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      height: calc(100vh - 60px);
+    }
+
+    .painel {
+      padding: 20px;
+      background: #111827;
+      border-right: 1px solid #1f2937;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #1e40af;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    #saida {
+      margin-top: 20px;
+      background: #020617;
+      padding: 15px;
+      border-radius: 10px;
+      min-height: 100px;
+    }
+
+    #map {
+      height: 100%;
+    }
+  </style>
 </head>
 <body>
 
-  <h1>🎓 Guia Escolar Inteligente</h1>
-  <p>Fale o destino: "biblioteca", "secretaria", "banheiro"</p>
+<header>🎓 Guia Escolar Inteligente</header>
 
-  <button onclick="iniciarReconhecimento()">🎤 Falar</button>
+<div class="container">
 
-  <div id="saida">Aguardando comando...</div>
+  <div class="painel">
+    <h3>Assistente por Voz</h3>
+    <p>Fale: biblioteca, secretaria, banheiro</p>
 
-  <script src="js/script.js"></script>
+    <button onclick="iniciarReconhecimento()">🎤 Falar</button>
+
+    <div id="saida">Aguardando comando...</div>
+  </div>
+
+  <div id="map"></div>
+
+</div>
+
+<script>
+  // Inicializar mapa
+  const map = L.map('map').setView([ -25.45, -49.27 ], 18);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  const locais = {
+    biblioteca: [-25.4505, -49.2705],
+    secretaria: [-25.4498, -49.2698],
+    banheiro: [-25.4502, -49.2702]
+  };
+
+  let marcador;
+
+  function irPara(local) {
+    const coords = locais[local];
+
+    if (!coords) return;
+
+    if (marcador) map.removeLayer(marcador);
+
+    marcador = L.marker(coords).addTo(map)
+      .bindPopup(local.toUpperCase())
+      .openPopup();
+
+    map.setView(coords, 19);
+  }
+
+  function falar(texto) {
+    const fala = new SpeechSynthesisUtterance(texto);
+    fala.lang = 'pt-BR';
+    speechSynthesis.speak(fala);
+  }
+
+  function iniciarReconhecimento() {
+    const reconhecimento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    reconhecimento.lang = 'pt-BR';
+
+    reconhecimento.start();
+
+    reconhecimento.onresult = function(event) {
+      const comando = event.results[0][0].transcript.toLowerCase();
+      document.getElementById('saida').innerText = "Você disse: " + comando;
+
+      processarComando(comando);
+    };
+  }
+
+  function processarComando(comando) {
+    let resposta = "Não entendi.";
+
+    if (comando.includes("biblioteca")) {
+      resposta = "Indo para a biblioteca";
+      irPara("biblioteca");
+    }
+    else if (comando.includes("secretaria")) {
+      resposta = "Indo para a secretaria";
+      irPara("secretaria");
+    }
+    else if (comando.includes("banheiro")) {
+      resposta = "Indo para o banheiro acessível";
+      irPara("banheiro");
+    }
+    else if (comando.includes("onde estou")) {
+      resposta = "Você está no mapa da escola";
+    }
+
+    document.getElementById('saida').innerText += "\n" + resposta;
+    falar(resposta);
+  }
+</script>
+
 </body>
 </html>
