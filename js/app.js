@@ -1,39 +1,45 @@
 // ====================== js/app.js ======================
+// Guia Escolar Inteligente - Apenas Planta
 
-const map = L.map('map', { 
-    zoomControl: true,
-    attributionControl: false 
-}).setView([-25.4505, -49.2702], 19);
+let map, rotaAtual;
 
-// Mapa base
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 22,
-    minZoom: 17
-}).addTo(map);
+// Inicializa o mapa SEM fundo de rua
+function initMap() {
+    map = L.map('map', {
+        zoomControl: true,
+        attributionControl: false,
+        minZoom: 17,
+        maxZoom: 22
+    }).setView([-25.4505, -49.2702], 19);
 
-// 🗺️ PLANTA BAIXA NOVA (funcionando agora)
-const bounds = [[-25.4528, -49.2728], [-25.4482, -49.2682]];
+    // Remove qualquer tile layer (mapa de ruas)
+    // Só vai aparecer a planta
 
-L.imageOverlay(
-    'https://i.ibb.co.com/7Y9vKzL/escola-planta-baixa.png',   // ← Imagem nova estável
-    bounds, 
-    { 
-        opacity: 0.90,
-        interactive: true 
-    }
-).addTo(map);
+    // 🗺️ PLANTA BAIXA - Apenas ela visível
+    const bounds = [[-25.4528, -49.2728], [-25.4482, -49.2682]];
 
-// Título da escola
-L.marker([-25.4524, -49.2715], {
-    icon: L.divIcon({
-        className: 'map-title',
-        html: `<div style="background:rgba(30,64,175,0.9); color:white; padding:8px 16px; border-radius:8px; font-size:15px; font-weight:bold; box-shadow:0 4px 12px rgba(0,0,0,0.6);">🏫 Colégio Estadual Benedito João Cordeiro</div>`,
-        iconSize: [340, 45]
-    })
-}).addTo(map);
+    L.imageOverlay(
+        'https://i.ibb.co/7Y9vKzL/escola-planta-baixa.png',   // Imagem recomendada
+        bounds,
+        { 
+            opacity: 0.95,
+            interactive: true 
+        }
+    ).addTo(map);
 
-// ... (o resto do código permanece igual ao que te mandei antes)
+    // Título da escola
+    L.marker([-25.4524, -49.2715], {
+        icon: L.divIcon({
+            className: 'map-title',
+            html: `<div style="background:rgba(30,64,175,0.95); color:white; padding:10px 18px; border-radius:8px; font-size:16px; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.6);">🏫 Colégio Estadual Benedito João Cordeiro</div>`,
+            iconSize: [360, 50]
+        })
+    }).addTo(map);
+}
 
+initMap();
+
+// ==================== Pontos e Rota (mesmo de antes) ====================
 const pontos = {
     entrada:    [-25.4509, -49.2709],
     secretaria: [-25.4507, -49.2707],
@@ -106,9 +112,10 @@ function desenharRota(caminho) {
     rotaAtual = L.polyline(caminho, { 
         color: '#22c55e', 
         weight: 8, 
-        opacity: 0.95 
+        opacity: 0.95,
+        lineJoin: 'round'
     }).addTo(map);
-    map.fitBounds(rotaAtual.getBounds(), { padding: [70, 70] });
+    map.fitBounds(rotaAtual.getBounds(), { padding: [80, 80] });
 }
 
 function falar(texto) {
@@ -125,7 +132,7 @@ function vibrar() {
 function ouvir() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-        alert("Use o Google Chrome para o reconhecimento de voz.");
+        alert("Use Google Chrome para voz funcionar.");
         return;
     }
 
@@ -147,11 +154,11 @@ function ouvir() {
             const caminho = calcularRota(destino);
             if (caminho.length > 1) desenharRota(caminho);
         } else {
-            falar("Não entendi. Tente: biblioteca, laboratório, secretaria, banheiro");
+            falar("Não entendi. Tente: biblioteca, laboratório, secretaria, banheiro, sala 1");
         }
     };
 
     recognition.onerror = function() {
-        document.getElementById('saida').innerHTML = `<span style="color:#ef4444">❌ Erro. Verifique o microfone.</span>`;
+        document.getElementById('saida').innerHTML = `<span style="color:#ef4444">❌ Erro no microfone. Tente novamente.</span>`;
     };
 }
