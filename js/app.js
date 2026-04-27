@@ -16,11 +16,10 @@ function initMap() {
     // Só vai aparecer a planta
 
     // 🗺️ PLANTA BAIXA - Apenas ela visível
-    const bounds = [[-25.4528, -49.2728], [-25.4482, -49.2682]];
+    const bounds = [[-25.451,-49.271], [-25.449,-49.269]];
 
-    L.imageOverlay(
-        'https://i.ibb.co/7Y9vKzL/escola-planta-baixa.png',   // Imagem recomendada
-        bounds,
+// usar a imagem do seu próprio projeto
+L.imageOverlay('plantabaixa.png', bounds).addTo(map);
         { 
             opacity: 0.95,
             interactive: true 
